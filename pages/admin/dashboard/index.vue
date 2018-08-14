@@ -11,6 +11,8 @@
         right
         small
         fab
+        nuxt
+        @click="newuser"
         >
         <v-icon>add</v-icon>
       </v-btn>
@@ -68,7 +70,7 @@
           <template slot="items" slot-scope="props">
             <td>{{ props.item.lastname }}</td>
             <td class="text-xs-center">{{ props.item.firstname }}</td>
-            <td class="text-xs-center">{{ props.item.Othername ? props.item.Othername : ''}}</td>
+            <td class="text-xs-center">{{ props.item.othername ? props.item.othername : ''}}</td>
             <!-- <td class="text-xs-center">{{ props.item.gender }}</td> -->
             <td class="text-xs-center">{{ props.item.classLevel ? props.item.classLevel : 'N/A' }}</td>
             <td class="text-xs-center">{{ props.item.studId || props.item.aid || props.item.teacherID }}</td>
@@ -77,9 +79,8 @@
                 <v-icon 
                   slot="activator"
                   class='deleteButtons mr-4' 
-                  :id="props.item.studId || props.item.teacherID || props.item.aid"
                   v-if="admin.superUser"
-                  @click.stop="dialog = true"
+                  @click.stop="deleteUser"
                 >
                     delete
                 </v-icon>
@@ -89,8 +90,7 @@
                 <v-icon 
                   slot="activator"
                   class='studentButtons mr-4' 
-                  :id="props.item.studId || props.item.teacherID"
-                  @click="ViewUser($event.target)"
+                  @click="ViewUser"
                 >
                     visibility
                 </v-icon>
@@ -100,8 +100,7 @@
                 <v-icon 
                   slot="activator"
                   class='studentButtons mr-4' 
-                  :id="props.item._id"
-                  @click="editUser($event.target)"
+                  @click="editUser"
                 >
                     edit
                 </v-icon>
@@ -111,8 +110,7 @@
                 <v-icon 
                   slot="activator"
                   class='studentButtons mr-4' 
-                  :id="props.item._id"
-                  @click="resetPass($event.target)"
+                  @click="resetPass"
                 >
                     settings_backup_restore
                 </v-icon>
@@ -122,8 +120,7 @@
                 <v-icon 
                   slot="activator"
                   class='studentButtons' 
-                  :id="props.item._id"
-                  @click="editRegSub($event.target)"
+                  @click="editRegSub()"
                 >
                     format_list_bulleted
                 </v-icon>
@@ -213,20 +210,12 @@
           </v-flex>
         </v-layout>
       </panel>
-      <confirm 
-        text-xs-center
-        v-if="dialog" 
-        :title="dtitle" 
-        :text="dtext" 
-        :dialog="dialog" 
-        :disagree="disagree" 
-        :agreeftn="deleteUser" 
-      /> 
     </v-layout>
   </v-layout>
 </template>
 <script>
-import { mapState } from "vuex";
+import { mapState } from "vuex"
+import swal from 'sweetalert'
 export default {
   layout: "admin",
   middleware: "adminAuth",
@@ -294,12 +283,6 @@ export default {
       countDown: null,
       errorMsg: null,
       
-      dialog: false,
-      dtitle: 'Delete User?',
-      dtext: 'Deleting this user will remove all ' 
-      + 'information related to the user from the database.' + 
-      ' e.g results, registered subject',
-      
     }
   },
   watch: {
@@ -339,46 +322,113 @@ export default {
   },
 
   methods: {
+    newuser () {
+      this.$router.push({
+        name: 'admin-newuser'
+      })
+    },
 
     async deleteUser () {
       try {
         const id = this.select.studId || this.select.teacherID || this.select.aid
-        await this.$axios.get(`delete-users/${id}`)
-        .then(res => {
-          this.allUsers = []
-          this.searchResult = []
-          this.select = null
-          // this.users = null
-          this.dialog = false;
-          this.refreshDB()
+        swal({
+          title: `Delete user: ${this.select.lastname+ ' ' + this.select.firstname}?`,
+          text: 'Deleting this user will remove all ' 
+                + 'information related to the user from database!' + 
+                ' e.g results, registered subject',
+          icon: "warning",
+          closeOnClickOutside: false,
+          buttons: true,
+          dangerMode: true
+        })
+        .then(async mustDelete => {
+          if (mustDelete) {
+            await this.$axios.get(`delete-users/${id}`)
+            .then(res => {
+              this.allUsers = []
+              this.searchResult = []
+              this.select = null
+              // this.users = null
+              if (res.statusText === 'OK') {
+                swal(res.data.success, {
+                  closeOnClickOutside: false,
+                  icon: "success",
+                })
+                this.refreshDB()
+              }
+            })
+          }
         })
       } catch (error) {
         console.log(error);
       }
     },
 
-    async ViewUser (e) {
-      const id = e.id
-      if (id.indexOf('TID') === -1 && id.indexOf('SCH') === -1) return
+    async ViewUser () {
+      const id = this.select.studId ? this.select.studId : this.select.teacherID
+      if (!id) return
       this.$router.push(`users/${id}`)
     },
 
-    async editUser (e) {
-
+    async editUser () {
+      const id = this.select.studId ? this.select.studId : this.select.teacherID
+      if (!id) return
+      this.$router.push(`edit/${id}`)
     },
 
-    async resetPass (e) {
-      
+    resetPass () {
+      try {
+        const id = this.select.studId ? this.select.studId.toLowerCase() : this.select.teacherID.toLowerCase()
+        let response = null
+        const password = {
+          newPass: id
+        }
+        swal({
+          title: "Sure to reset Password?",
+          text: "This will reset user's password to default password!" + 
+                " In most cases, new password will be user's login ID",
+          icon: "warning",
+          closeOnClickOutside: false,
+          buttons: true,
+          dangerMode: true,
+        })
+        .then(async reset => {
+          if (reset) {
+            if (this.select.studId) {
+              response = await this.$axios.post(`/reset-student-password/${id}`, password)
+            } else if (this.select.teacherID){
+              response = await this.$axios.post(`/reset-teacher-password/${id}`, password)
+            }
+            if (response.status === 200) {
+              swal("Password Reset was successfull!", {
+                closeOnClickOutside: false,
+                icon: "success",
+              });
+            }
+            
+          } else {
+            return
+          }
+        })
+       
+      } catch (error) {
+        console.log(error)
+      }
     },
 
     async editRegSub (e) {
-
-    },
-    async disagree (e) {
-      this.dialog = false
-    },
-    async agreeftn (e) {
-
+      let clevel = null
+      const id = this.select.studId ? this.select.studId : this.select.teacherID
+      if (this.select.classLevel) {
+        clevel = this.select.classLevel
+      }
+      this.$router.push({
+        name: 'admin-course',
+        params: {
+          userID: id,
+          studClass: clevel
+        }
+      })
     },
 
     formatDate (date) {
@@ -404,7 +454,7 @@ export default {
 
       admins.forEach(user => {
         const id = user.aid;
-        user.detail = user.lastname + " " + user.firstname + " " + id;
+        user.detail = user.lastname + " " + user.othername + " " + id;
       });
       this.allUsers = users;
       this.adminUsers = admins;

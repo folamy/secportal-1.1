@@ -30,12 +30,13 @@ export default {
       const response = await this.$axios.post(`/s-login`, {studId: studId, password: studId})
 
       this.$store.commit('setStudent', response.data.user)
-      this.$store.commit('setToken', response.data.token)
-
+      this.$store.commit('setSToken', response.data.Stoken)
+      console.log(response);
+      // this.$store.commit('setRegData', null)
+      
       this.$router.push({
         name: 'student-dashboard',
       })
-      this.$store.commit('setRegData', null)
     }
   },
 }

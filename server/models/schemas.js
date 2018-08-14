@@ -149,7 +149,7 @@ const teacherSchema = new Schema({
   passport: String,
   // portfolio:  String,
   // tclass:  String,
-  stateOrigin:  String,
+  stateOrigin:  Number,
   localGov:  String,
   // role:  String,
   homeAddress:  String,
@@ -195,6 +195,15 @@ teacherSchema.pre('save', function(next) {
   const salt = bcrypt.genSaltSync(10)
   if (!this.password) {
     this.password  = bcrypt.hashSync(this.teacherID.toLowerCase(), salt)
+  }
+  next()
+})
+
+adminSchema.pre('save', function(next) {
+  const salt = bcrypt.genSaltSync(10)
+  if (!this.password) {
+    this.email = null
+    this.password  = bcrypt.hashSync(this.aid.toLowerCase(), salt)
   }
   next()
 })

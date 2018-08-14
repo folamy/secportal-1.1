@@ -15,7 +15,6 @@ module.exports = {
       const path = 'static/uploads/teachers/results/' + csvfile.name
 
       // ensure file is available for processing
-      // if (!csvfile) return res.
       // move csvfile to the stated path
       await csvfile.mv(path)
       .then(success => {})

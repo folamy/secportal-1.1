@@ -47,6 +47,10 @@ const mutations = {
     state.term = term;
   },
 
+  setAdminSubs(state, data) {
+    state.adminSubs = data;
+  },
+
   setTermEnds(state, data) {
     state.termEnds = data;
   },

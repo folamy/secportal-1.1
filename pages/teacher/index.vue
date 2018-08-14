@@ -11,6 +11,16 @@
     <v-flex v-if="!isTeacherLoggedIn" xs12 sm8 md5 class="box2 mb-2">
       <panel title="Teachers' Login" >
         <v-flex xs10 class="form mt-5">
+          <v-flex xs12>
+            <v-progress-linear
+              :active="isUpdating"
+              class="mb-4"
+              color="green lighten-3"
+              height="4"
+              indeterminate
+            >
+            </v-progress-linear>
+          </v-flex>
           <v-form v-model="valid" @submit.prevent="submit" ref="form" lazy-validation>
             <v-text-field
               outline
@@ -68,39 +78,51 @@ export default {
       background: 'red',
       valid: true,
       textFieldRule: [v => !!v || 'Name is required'],
+      isUpdating: false
     }
   },
   methods: {
     async submit (event) {
-      if(event) event.preventDefault()
       try {
+        if(event) event.preventDefault()
         if (this.$refs.form.validate()) {
+          this.isUpdating = true
           const response = await this.$axios.$post('/t-login', this.login)
+          console.log(response)
 
-          // const tokenT : response.Ttoken
           Cookie.set('tokenT', response.Ttoken)
           this.$store.commit('setTToken', response.Ttoken) // mutating to store for client rendering
           this.$store.commit('setTeacher', response.user) // mutating to store for client rendering
-          // this.$axios.setHeader('Authorization', response.Ttoken)
-          // this.$axios.setToken(response.Ttoken)
           this.$router.push({
             name: 'teacher-profile',
           })
         }
       } catch (err) {
-        console.log(err);
-        this.error = err.response.data.error
+        if (err) {
+          setTimeout(() => {
+            // console.log(err);
+            this.error = err.response.data.error
+          }, 1000)
+        }
+        
       }
     }
   },
+
   computed: {
     ...mapState([
       'isTeacherLoggedIn'
     ])
   },
-  mounted () {
-    
+
+  watch: {
+    isUpdating (val) {
+      if (val) {
+        setTimeout(() => (this.isUpdating = !this.isUpdating), 2000)
+      }
+    }
   },
+
   async fetch ({ store, redirect }) {
     if (store.state.isTeacherLoggedIn) {
       redirect('/teacher/profile')

@@ -7,8 +7,10 @@
           :items="subjects"
           class="elevation-1"
           hide-actions
-          no-data-text="You have not registered any subject"
+          :no-data-text="noDataText"
+          :loading="isUpdating"
         >
+        <v-progress-linear slot="progress" color="secport" indeterminate></v-progress-linear>
         <template slot="items" slot-scope="props">
          <td>{{ props.item.name }}</td>
          <td class="text-xs-center">{{ props.item.status }}</td>
@@ -34,6 +36,8 @@ export default {
   middleware: 'studentAuth',
   data () {
     return {
+      isUpdating: false,
+      noDataText: this.isUpdating ? 'You have not registered any subject' : 'loading data',
       subjects: [],
       headers: [
           {
@@ -54,7 +58,16 @@ export default {
     }
   },
 
+  watch: {
+    isUpdating (val) {
+      if (val) {
+        setTimeout(() => (this.isUpdating = !this.isUpdating), 2000)
+      }
+    }
+  },
+
   async created () {
+    this.isUpdating = true
     const getRegSubs = await this.$axios.get(`/getregisteredsubs/${this.student.studId}/${this.student.classLevel}`)
     let subj
 
@@ -64,14 +77,17 @@ export default {
 
     if (getRegSubs.data) {
       const registered = getRegSubs.data.subjects
-      for (var i = 0; i < subs.length; i++) {
-        for (var r = 0; r < registered.length; r++) {
-          if (subs[i].subID === registered[r].subID) {
-            this.subjects.push(subs[i])
+      setTimeout(() => {
+        for (var i = 0; i < subs.length; i++) {
+          for (var r = 0; r < registered.length; r++) {
+            if (subs[i].subID === registered[r].subID) {
+              this.subjects.push(subs[i])
+            }
           }
         }
-      }
+      }, 2000)
     }
+    
     // console.log(this.subjects);
   }
 }

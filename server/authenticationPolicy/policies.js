@@ -50,10 +50,12 @@ module.exports = {
         var parsed = cookieparser.parse(req.headers.cookie)
         token = parsed.tokenA
       }
-
+      
       jwt.verify(token, config.authentication.jwtSecret)
       next()
     } catch (e) {
+      console.log('there was error here');
+      
       req.session.admin = null
       req.session.Atoken = null;
       return res.status(401).send({

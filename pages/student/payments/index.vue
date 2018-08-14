@@ -1,7 +1,7 @@
 <template>
   <v-layout row wrap>
     <panel title="Payments > New Student Fees" class="panel">
-      <v-flex xs9 class="tableItems mt-2">
+      <v-flex xs9 class="tableItems mt-5">
         <v-data-table
          :headers="headers"
          :items="schoolItems"
@@ -17,10 +17,10 @@
         <v-flex class="total">
           <span class="label">Total </span> <span class="amount">N{{totalAmount}}</span>
         </v-flex><br>
-        <v-divider></v-divider>
-        <div class="">
-          <v-flex xs class="payMe" v-if="!student.sch_fees">
+        <v-card-actions class="mt-5">
+          <!-- <v-flex xs class="payMe" > -->
             <paystack
+              v-if="!student.sch_fees"
               class="payMe white--text"
               :amount="totalAmount * 100"
               :email="email"
@@ -31,9 +31,9 @@
               :embed="false"
               :metadata="metadata"
             ></paystack>
-          </v-flex>
+          <!-- </v-flex> -->
           <v-btn v-else class="payMe">Print Receipt</v-btn>
-        </div>
+        </v-card-actions>
       </v-flex>
     </panel>
   </v-layout>

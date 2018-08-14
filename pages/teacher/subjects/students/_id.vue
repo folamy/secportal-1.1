@@ -10,9 +10,9 @@
           item-key="name"
           class="table"
           no-data-text="No student for this subject"
-          :loading="true"
+          :loading="isUpdating"
         >
-        <v-progress-linear slot="progress" color="blue" indeterminate></v-progress-linear>
+        <v-progress-linear slot="progress" color="secport" indeterminate></v-progress-linear>
         <template slot="headers" slot-scope="props">
           <tr>
             <th
@@ -46,6 +46,7 @@ export default {
   middleware: 'teacherAuth',
   data () {
     return {
+      isUpdating: false,
       subject: '',
       Sclass: '',
       students: [],
@@ -71,7 +72,13 @@ export default {
       ],
     }
   },
-
+  watch: {
+    isUpdating (val) {
+      if (val) {
+        setTimeout(() => (this.isUpdating = !this.isUpdating), 1000)
+      }
+    }
+  },
   methods: {
     // toggleAll () {
     //   if (this.selected.length) this.selected = []
@@ -90,6 +97,7 @@ export default {
   },
 
   async created () {
+    this.isUpdating = true
     const UrlParams = this.$route.params.id
     const idclass = UrlParams.split('_').sort()
     const classLevel = [
@@ -102,7 +110,7 @@ export default {
     ]
     // console.log(idclass);
     this.Sclass = idclass[1]
-    const tsubs = await this.$axios.get(`/my-subs/${this.$store.state.teacher.teacherID}`)
+    const tsubs = await this.$axios.get(`/teacher-reg-subs/${this.$store.state.teacher.teacherID}`)
     const studentSubs = await this.$axios.get(`/student-subs`)
     const allstudent = await this.$axios.get(`/students`)
 

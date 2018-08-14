@@ -93,6 +93,7 @@ module.exports = {
         console.log(err);
       });
   },
+
   async setTerm(req, res) {
     try {
       //reset old term to false
@@ -125,6 +126,51 @@ module.exports = {
     }
   },
 
+  async saveEdit(req, res) {
+    try {
+      let dbData = null
+      let bodyData = req.body
+      Promise.props({
+        student: models.student.findOne({ studId: req.body.studId }).execAsync(),
+        teacher: models.teacher.findOne({ teacherID: req.body.teacherID }).execAsync(),
+      })
+      .then(users => {
+        users.student ? dbData = users.student : dbData = users.teacher
+        if (dbData.studId) {
+          models.student.findOneAndUpdate({ studId: bodyData.studId }, bodyData, { overwrite: true })
+          .then(updated => {
+            console.log(updated);
+            return res.send('user updated successfully')
+          })
+          
+        } else if (dbData.teacherID){
+          models.teacher.findOneAndUpdate({ teacherID: bodyData.teacherID }, bodyData, { overwrite: true })
+          .then (updated => {
+            console.log(updated);
+            return res.send('user updated successfully')
+          })
+        }
+      })
+    } catch (error) {
+      console.log(error);
+      return res.send(error)
+    }
+  },
+
+  async addUser(req, res) {
+    try {
+      // console.log(req.body);
+      const tosave = new models.adminUser(req.body)
+      await tosave.save(function (err, user) {
+        if (err) res.send(err)
+        res.send({
+          success: "User Added Successfully"
+        })
+      })
+    } catch (err) {
+      console.log(err)
+    }
+  },
   deleteUsers(req, res) {
     try {
       if (!req.session.admin && !req.session.admin.superUser) return res.status(401).send('Unauthorized Access')
@@ -134,7 +180,53 @@ module.exports = {
 			models.regsub.remove({ studId: req.params.id }).exec()
 			models.teacherSub.remove({ teacherID: req.params.id }).exec();
 			models.teacher.remove({ teacherID: req.params.id }).exec();
-			return res.send("User has been deleted");
+			return res.send({
+        success: "User has been deleted"
+      });
+    } catch (err) {
+      console.log(err)
+    }
+  },
+
+  delSubs(req, res) {
+    try {
+      const userID = req.body.userID
+      const level = req.body.level
+      const tlevel = req.body.tclass
+      const tsub = req.body.tsub
+      const subjects = req.body.subjects
+
+      if (!req.session.admin) return res.status(401).send('Unauthorized Access')
+      Promise.props({
+        studSubs: models.regsub.findOne({ studId: userID, class: level }).execAsync(),
+        tsubs: models.teacherSub.findOne({ teacherID: userID }).execAsync(),
+      })
+      .then(subs => {
+        if (subs.studSubs) {
+          models.regsub.findOne({ studId: userID, class: level }, (err, doc) => {
+            if (err) console.log(err)
+            
+            doc.set({ subjects: subjects })
+            doc.save(function (err, updated) {
+              if (err) console.log(err);
+              // console.log(updated);
+              return res.send(updated.subjects)
+            })
+          })
+        } else if (subs.tsubs) {
+          console.log(req.body);
+          models.teacherSub.remove({ teacherID: userID, class: tlevel, name: tsub })
+          .then(() => {
+            models.teacherSub.find({ teacherID: userID })
+            .then((docs) => {
+             return res.send(docs)
+            })
+            .catch((err) => {
+              console.log(err);
+            })
+          })
+        }
+      })
     } catch (err) {
       console.log(err)
     }

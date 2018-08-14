@@ -27,7 +27,7 @@
             <th
               v-for="header in props.headers"
               :key="header.text"
-              :class="['text-xs-center column sortable', pagination.descending ? 'desc' : 'asc', header.value === pagination.sortBy ? 'active' : '']"
+              :class="header.text !== 'Subject Names' ? ['text-xs-center column sortable', pagination.descending ? 'desc' : 'asc', header.value === pagination.sortBy ? 'active' : ''] : ['text-xs-left column sortable', pagination.descending ? 'desc' : 'asc', header.value === pagination.sortBy ? 'active' : '']"
               @click="changeSort(header.value)"
             >
               <v-icon small>arrow_upward</v-icon>
@@ -62,8 +62,8 @@
           >
           <template slot="items" slot-scope="props">
            <td>{{ props.item.name }}</td>
-           <td class="text-xs-right">{{ props.item.status }}</td>
-           <td class="text-xs-right">{{ props.item.school }}</td>
+           <td class="text-xs-left">{{ props.item.status }}</td>
+           <td class="text-xs-left">{{ props.item.school }}</td>
 
          </template>
          <template slot="footer" v-if="selected.length">
@@ -209,11 +209,10 @@ export default {
     const student = store.state.student
     const ssClass = student.subClass
     const subs = []
-    // console.log(typeof subs);
+    
     if (store.state.student.classLevel < 4) {
       const subj = await $axios.get('/subject1')
       store.commit('setSubject', subj.data)
-      // console.log(subj.data);
     } else {
       const subj = await $axios.get('/subject2')
       if (ssClass === 'Art') {

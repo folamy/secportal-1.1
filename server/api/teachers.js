@@ -43,7 +43,7 @@ module.exports = (router) => {
     tController.teacherSubs
   )
 
-  router.get('/my-subs/:id',
+  router.get('/teacher-reg-subs/:id',
     checkToken.validateT,
     tController.mysubs
   )

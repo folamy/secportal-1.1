@@ -30,19 +30,6 @@ module.exports = {
       await models.allterm.find()
         .then((doc) => {
           req.session.allterms = doc
-          // req.session.term
-          // req.session.termEnd
-          // for (var i = 0; i < doc.length; i++) {
-          //   if (doc[i].current) {
-          //     req.session.term = doc[i].term
-          //     req.session.termEnd = doc[i].ends
-          //     return res.send({
-          //       current: req.session.term,
-          //       allterms: req.session.allterms,
-          //       termEnds: req.session.termEnd
-          //     });
-          //   }
-          // }
           return res.send(req.session.allterms);
         })
     } catch (err) {
@@ -51,16 +38,18 @@ module.exports = {
   },
 
   async login (req, res) {
-
     try {
-      await models.student.findOne({studId: req.body.studId.toUpperCase()},function(err, student) {
+      const id = req.body.studId.toUpperCase()
+      const bodyPassword = req.body.password.toUpperCase()
+      const password = (id === bodyPassword) ? bodyPassword.toLowerCase() : req.body.password
+      await models.student.findOne({studId: id},function(err, student) {
         if (err) res.send(err)
         if (!student) {
           return res.status(404).send({
             error: 'Student ID: This student ID was not found'
           })
         } else {
-          if (!bcrypt.compareSync(req.body.password.toLowerCase(), student.password)) {
+          if (!bcrypt.compareSync(password, student.password)) {
             return res.status(401).send({
               error: 'Password: Incorrect password! You can contact <b>Admin</b> to reset your password'
             })
@@ -116,9 +105,9 @@ module.exports = {
   async getPassword (req, res) {
     try {
       // console.log(req.body);
-      const id = req.params.id
-      const newpass = bcrypt.hashSync(req.body.newPass.toLowerCase(), bcrypt.genSaltSync(10))
-
+      const id = req.params.id.toUpperCase()
+      const newpass = bcrypt.hashSync(req.body.newPass, bcrypt.genSaltSync(10))
+      
       await models.student.findOneAndUpdate({studId: id}, {password: newpass}, function (err, doc) {
         if (err) res.send(err)
         res.send(doc);

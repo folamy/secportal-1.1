@@ -149,7 +149,7 @@ import toolbar from '~/components/ToolbarAdmin'
 }
 
 .toolbar {
-  background-color: seagreen !important;
+  background-color: #2e8b57 !important;
 }
 
 .header {

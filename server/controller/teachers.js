@@ -28,12 +28,15 @@ function jwtSignUser (user) {
 module.exports = {
   async login (req, res) {
     try {
-      await models.teacher.findOne({teacherID: req.body.teacherID})
+      const id = req.body.teacherID.toUpperCase()
+      const bodyPassword = req.body.password.toUpperCase()
+      const password = (id === bodyPassword) ? bodyPassword.toLowerCase() : req.body.password
+      await models.teacher.findOne({teacherID: id})
       .then((teacher) => {
         if (!teacher) return res.status(404).send({
           error: 'Teacher ID was not found'
         })
-        if (!bcrypt.compareSync(req.body.password.toLowerCase(), teacher.password)) {
+        if (!bcrypt.compareSync(password, teacher.password)) {
           return res.status(401).send({
             error: 'Password: Incorrect password! You can contact <b>Admin</b> to reset your password'
           })
@@ -178,7 +181,7 @@ module.exports = {
   async changePassword (req, res) {
     try {
       console.log(req.body);
-      const id = req.params.id
+      const id = req.params.id.toUpperCase()
       const newpass = bcrypt.hashSync(req.body.newPass.toLowerCase(), bcrypt.genSaltSync(10))
       await models.teacher.findOneAndUpdate({teacherID: id}, {password: newpass}, function (err, doc) {
         if (err) res.send(err)

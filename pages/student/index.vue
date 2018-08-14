@@ -12,6 +12,16 @@
     <v-flex v-if="!isStudentLoggedIn" xs12 sm8 md5 class="box2 mb-2">
       <panel title="Student Login" >
         <v-flex xs10 class="form mt-5">
+          <v-flex xs12>
+            <v-progress-linear
+              :active="isUpdating"
+              class="mb-4"
+              color="green lighten-3"
+              height="4"
+              indeterminate
+            >
+            </v-progress-linear>
+          </v-flex>
           <v-form v-model="valid" @submit.prevent="submit" ref="form" lazy-validation>
             <v-text-field
               outline
@@ -76,28 +86,42 @@ export default {
       background: 'red',
       valid: true,
       textFieldRule: [v => !!v || 'This field is required'],
+      isUpdating: false
     }
   },
   methods: {
     async submit () {
       try {
         if (this.$refs.form.validate()) {
-
+          this.isUpdating = true
           const response = await this.$axios.$post('/s-login', this.login)
           console.log(response);
           Cookie.set('tokenS', response.Stoken)
           this.$store.commit('setSToken', response.Stoken)
           this.$store.commit('setStudent', response.user)
-
           this.$router.push({
             name: 'student-dashboard',
           })
         }
       } catch (err) {
-        this.error = err.response.data.error
+        if (err) {
+          setTimeout(() => {
+            // console.log(err);
+            this.error = err.response.data.error
+          }, 1000)
+        }
       }
     }
   },
+
+  watch: {
+    isUpdating (val) {
+      if (val) {
+        setTimeout(() => (this.isUpdating = !this.isUpdating), 2000)
+      }
+    }
+  },
+
   computed: {
     ...mapState([
       'isStudentLoggedIn'

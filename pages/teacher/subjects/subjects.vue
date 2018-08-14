@@ -9,12 +9,14 @@
           class="elevation-1"
           hide-actions
           no-data-text="You have not registered any subject"
+          :loading="isUpdating"
         >
+        <v-progress-linear slot="progress" color="secport" indeterminate></v-progress-linear>
         <template slot="items" slot-scope="props">
          <td>{{ props.item.SN }}</td>
          <td>{{ props.item.name }}</td>
-         <td class="text-xs-right">{{ props.item.class }}</td>
-         <td class="text-xs-right">
+         <td class="text-xs-center">{{ props.item.class }}</td>
+         <td class="text-xs-center">
            <v-icon class='deleteButtons' title="Delete this subject"  :id="props.item._id" @click="deleteSub($event.target)">delete</v-icon> |
            <v-icon class="studentButtons" title="View students"  :id="props.item._id + '_' + props.item.class" @click="viewStudents($event.target)">people</v-icon>
         </td>
@@ -32,6 +34,7 @@ export default {
   data () {
     return {
       valuess: '',
+      isUpdating: false,
       subs: [],
       headers: [
         { text: 'S/N', sortable: false, value: '', align: 'left',},
@@ -41,9 +44,16 @@ export default {
           sortable: true,
           value: 'name'
         },
-        { text: 'Class', sortable: true, value: 'class' },
-        { text: 'Actions', value: 'actions', sortable: false, },
+        { text: 'Class', sortable: true, value: 'class', align: 'center',  },
+        { text: 'Actions', value: 'actions', sortable: false, align: 'center', },
       ],
+    }
+  },
+  watch: {
+    isUpdating (val) {
+      if (val) {
+        setTimeout(() => (this.isUpdating = !this.isUpdating), 2000)
+      }
     }
   },
   methods: {
@@ -81,9 +91,8 @@ export default {
   },
 
   async created () {
-    console.log('sub1');
-    
-    const tsubs = await this.$axios.get(`/my-subs/${this.$store.state.teacher.teacherID}`)
+    this.isUpdating = true
+    const tsubs = await this.$axios.get(`/teacher-reg-subs/${this.$store.state.teacher.teacherID}`)
     const registered = tsubs.data
     for (var i = 0; i < registered.length; i++) {
       registered[i].text = registered[i].name

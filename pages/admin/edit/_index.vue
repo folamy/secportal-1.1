@@ -1,36 +1,45 @@
-<template lang="html">
+<template>
   <v-layout row wrap>
-    <panel :title="title" class="panel">
+    <panel :title="title" class="panel" justify-center>
       <v-flex xs9 class="register">
-        <h1 class="title mt-2 mb-3">Student Details</h1>
-        <v-form v-model="valid" ref="form" lazy-validation>
+        <h1 class="title mt-2 mb-3">Edit Uses's Details</h1>
+        <v-form  @submit.prevent="saveInfo" v-model="valid" ref="form" lazy-validation>
+          <v-select
+            v-if="userData.teacherID"
+            outline
+            :items="titles"
+            v-model="userData.ttitle"
+            label="Title"
+            item-value="text"
+            :rules="[v => !!v || 'Title is required']"
+            required
+          ></v-select>
           <v-text-field
             outline
             label="Surname"
-            single-line
-            v-model="studData.lastname"
+            v-model="userData.lastname"
             :rules="textFieldRule"
             required
           >
         </v-text-field>
           <v-text-field
             outline
-            single-line
             label="First Name"
-            v-model="studData.firstname"
+            v-model="userData.firstname"
             value=""
             :rules="textFieldRule"
             required
           ></v-text-field>
           <v-text-field
             outline
-            single-line
             label="Other Names"
-            v-model="studData.othername"
+            v-model="userData.othername"
             value=""
           ></v-text-field>
 
-          <v-radio-group v-model="studData.gender"
+          <v-radio-group
+            outline
+            v-model="userData.gender"
             label="Your gender"
             row
             :rules="[v => !!v || 'Select your gender']"
@@ -40,8 +49,9 @@
             <v-radio class="mt-2" label="Female" value="Female"></v-radio>
           </v-radio-group>
 
-          <!-- <datepicker :dob.sync="studData.dob"/> -->
+          <!-- <datepicker :dob.sync="userData.dob"/> -->
           <v-menu
+            outline
             ref="menu"
             lazy
             :close-on-content-click="false"
@@ -54,114 +64,144 @@
           >
             <v-text-field
               outline
-              single-line
               slot="activator"
               label="Date of Birth"
-              v-model="studData.dob"
+              v-model="userData.dob"
               append-icon="event"
               readonly
               :rules="textFieldRule"
               required
             ></v-text-field>
             <v-date-picker
-              header-color="cyan darken-3"
+              header-color="secport"
               autosave
               ref="picker"
-              v-model="studData.dob"
+              v-model="userData.dob"
               @change="save"
-              min="2000-01-01"
+              min="1950-01-01"
               :max="new Date().toISOString().substr(0, 10)"
             ></v-date-picker>
           </v-menu>
-          <!-- <datepicker :dob.sync="studData.dob"/> -->
+          <!-- <datepicker :dob.sync="userData.dob"/> -->
           <v-select
             outline
-            v-model="studData.stateOrigin"
+            v-model="userData.stateOrigin"
             :items="Ngstate"
-            :rules="[v => !!v || 'State of origin is required']"
             label="Select State"
             item-value="stateID"
+            item-text="name"
             required
-            @input="changeState()"
             >
           </v-select>
 
           <v-select
             outline
-            v-model="studData.localGov"
+            v-model="userData.localGov"
             :items="Nglga"
-            :rules="[v => !!v || 'Local Government is required']"
             label="Select Local Government"
             required
             item-value="name"
+            item-text="name"
             >
           </v-select>
-
           <v-select
+            v-if="userData.studId"
             outline
-            v-model="studData.classLevel"
+            v-model="userData.classLevel"
             :items="classLevel"
             :rules="[v => !!v || 'Select a class']"
             label="Select a class"
+            item-text="name"
             item-value="classId"
             required
             @input="SSclass()"
             >
           </v-select>
-          <!-- Class Level -->
-
           <div class="" v-if="showSubClass">
             <v-select
               outline
-              v-model="studData.subClass"
+              v-model="userData.subClass"
               :items="subClass"
               :rules="[v => !!v || 'State of origin is required']"
               label="Select one SS Class"
               item-value="name"
+              item-text="name"
               required
               >
             </v-select>
           </div>
-
-          <h1 class="title mt-2 mb-3">Parents' Details</h1>
+          <h1 v-if="userData.studId" class="title mt-2 mb-3">Parents' Details</h1>
           <v-text-field
+            v-if="userData.studId"
             outline
             append-icon="contacts"
-            single-line
             label="Guardian's Names"
-            v-model="studData.guardian"
+            v-model="userData.guardian"
             value=""
             :rules="textFieldRule"
             required
           ></v-text-field>
+          <v-text-field
+            outline
+            append-icon="contact_phone"
+            label="Personal Phone number"
+            v-model="userData.phoneNumber"
+            :value="states"
+            :rules="phoneReg"
+            required
+          ></v-text-field>
+
           <v-textarea
             outline
             append-icon="home"
-            single-line
+            multi-line
+            Reverses the input orientation
             label="Home Address"
-            v-model="studData.homeAddress"
+            v-model="userData.homeAddress"
             value=""
             :rules="textFieldRule"
             required
           ></v-textarea>
           <v-text-field
             outline
-            append-icon="contact_phone"
-            single-line
-            label="Guardian's Phone Number"
-            v-model="studData.phoneNumber"
-            value=""
-            :rules="phoneReg"
-            required
-          ></v-text-field>
-          <v-text-field
-            outline
             append-icon="contact_mail"
-            single-line
-            label="Guardian's email Address"
-            v-model="studData.email"
+            label="Email Address"
+            v-model="userData.email"
             value=""
             :rules="EmailRules"
+            required
+          ></v-text-field>
+
+        <h1 v-if="userData.teacherID" class="title mt-2 mb-3">Next of Kin</h1>
+          <v-text-field
+            v-if="userData.teacherID"
+            outline
+            append-icon="contacts"
+            label="Next of Kin's Name"
+            v-model="userData.nextOfKin"
+            value=""
+            :rules="textFieldRule"
+            required
+          ></v-text-field>
+          <v-textarea
+            v-if="userData.teacherID"
+            outline
+            append-icon="home"
+            multi-line
+            label="Home Address"
+            v-model="userData.nextOfKinHome"
+            value=""
+            :rules="textFieldRule"
+            required
+          ></v-textarea>
+          <v-text-field
+            v-if="userData.teacherID"
+            outline
+            append-icon="contact_phone"
+            label="Next of Kin Phone number"
+            v-model="userData.nextOfKinPhone"
+            value=""
+            :rules="phoneReg"
             required
           ></v-text-field>
           <v-checkbox
@@ -172,15 +212,14 @@
           ></v-checkbox>
           <v-divider></v-divider>
           <div class="danger-alert" v-html="error"></div>
-          <v-btn
+          <!-- <v-btn
             color="red darken-2"
             @click="clear">
             clear
-          </v-btn>
+          </v-btn> -->
           <v-btn
             class=""
             type="submit"
-            @click.stop="saveContinue"
           >
             Continue
           </v-btn>
@@ -188,45 +227,35 @@
         </v-form>
       </v-flex>
     </panel>
-  </v-layout>
+	</v-layout>
 </template>
 
 <script>
-import datepicker from '~/components/datepicker'
-import { log } from 'util';
+import { mapState } from "vuex";
 export default {
-  components: {
-    datepicker
-  },
+  layout: 'admin',
+  middleware: 'adminAuth',
   data () {
     return {
-      title: 'Student Registration',
+      title: '',
+      states: '',
       valid: true,
-      studData: {
-        studId: '',
-        lastname: '',
-        firstname: '',
-        othername: '',
-        gender:'',
-        dob: null,
-        stateOrigin: 0,
-        localGov: '',
-        classLevel: 0,
-          subClass: '',
-        guardian: '',
-        homeAddress: '',
-        phoneNumber: '',
-        email: ''
-      },
-      idPrefix: 'SCH',
+      userData: '',
+      originalData: '',
+
+      titles: [
+        {text: 'Mr.'},
+        {text: 'Mrs.'},
+        {text: 'Miss.'}
+      ],
+
       error: null,
+      showSubClass: false,
       agree: false,
       Ngstate: [],
       Nglga: [],
       classLevel: [],
       subClass: [],
-      showSubClass: false,
-      stateSelected: '',
       menu: false,
 
       // form vFormTemplateValidation
@@ -258,22 +287,22 @@ export default {
       this.error = null
     },
 
-    async saveContinue (event) {
+    async saveInfo (event) {
       try {
-        if (event) event.preventDefault()
 
         if (this.$refs.form.validate()) {
-          this.studData.studId = this.idPrefix + new Date().getTime().toString().substr(8,5) +
-            Math.floor(Math.random()*10)
-
-          // check if student exist in the database
-          const response = await this.$axios.post('/s-register' , this.studData)
-
-          this.$store.commit('setRegData', this.studData)
-          this.$router.push({
-            name: 'student-registration-passport',
+          // console.log(this.userData);
+          await this.$axios.post('/save-edit', this.userData)
+          .then(res => {
+            console.log(res);
+            const id = this.userData.teacherId || this.userData.studId
+            this.$router.push({
+              name: 'admin-users',
+              params: `${id}`
+            })
           })
         }
+
       } catch (err) {
         console.log(err);
         this.error = err.response.data.error
@@ -281,7 +310,7 @@ export default {
     },
 
     async changeState () {
-      const lga = await this.$axios.$get('/lga/' + this.studData.stateOrigin)
+      const lga = await this.$axios.$get('/lga/' + this.userData.stateOrigin)
       this.Nglga = []
       for (var i = 0; i < lga.length; i++) {
         lga[i].text = lga[i].name
@@ -290,58 +319,46 @@ export default {
     },
 
     async SSclass () {
-      if (this.studData.classLevel > 3) {
+      if (this.userData.classLevel > 3) {
         this.showSubClass = true
         this.subClass = []
-        const SS = await this.$axios.$get('/ssclass')
-        for (var i = 0; i < SS.length; i++) {
-          SS[i].text = SS[i].name
-          this.subClass.push(SS[i]);
-        }
+        this.subClass = await this.$axios.$get('/ssclass')
       } else {
         this.showSubClass = false
-        this.studData.subClass = null
+        this.userData.subClass = ''
       }
     }
 
   },
 
-  async created() {
-    const obj = {}
+  async created () {
     const states =  await this.$axios.$get('/state')
-    for (var i = 0; i < states.length; i++) {
-      states[i].text = states[i].name
-      this.Ngstate.push(states[i]);
-    }
-    // console.log(this.Ngstate);
-    const allClass = await this.$axios.$get('/allclass')
-    for (var i = 0; i < allClass.length; i++) {
-      this.classLevel.push(allClass[i])
-    }
+    this.Ngstate = states
 
-    for (var i = 0; i < this.classLevel.length; i++) {
-      this.classLevel[i].text = this.classLevel[i].name
-    }
+    const UrlParams = this.$route.params.index
+    let url = await this.$axios.get(`user-info/${UrlParams}`)
+    const users = url.data
+    this.originalData = url.data
+    this.userData =  users.students ? users.students : users.teachers
+    // console.log(this.userData);
+
+    const lga = await this.$axios.$get('/lga/' + this.userData.stateOrigin)
+    this.Nglga = lga
+
+    this.classLevel = await this.$axios.$get('/allclass')
+    this.subClass = await this.$axios.$get('/ssclass')
+
+    this.userData.subClass ? this.showSubClass = true : this.showSubClass = false
+    
+    this.title = 'Editing > ' + this.userData.lastname + ' ' + this.userData.firstname 
+    
   },
 
 }
 </script>
 
-<style scoped>
-.register {
-  margin: auto !important;
-}
-.danger-alert {
-  color: red;
-
-}
-
-.btn {
-  /* border: 1px solid #000 !important; */
-  margin-left: 0px !important;
-}
-.option {
-  border: 1px solid red !important;
-  /* margin-left: 0px !important; */
-}
+<style>
+  .register {
+    margin: auto;
+  }
 </style>

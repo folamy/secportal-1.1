@@ -1,6 +1,6 @@
 <template>
 	<v-layout row wrap>
-    <panel :title="titleName || SName" class="panel"> 
+    <panel :title="TName || SName" class="panel"> 
       <v-layout column wrap>
         <v-flex class="profile">
 					<img
@@ -21,8 +21,27 @@
 								<td class="text-xs-left">{{ props.item.personal }}</td>
 							</template>
 					</v-data-table>
+          <v-card width="80%" class="profile">
+            <v-card-actions>
+              <!-- <v-spacer></v-spacer> -->
+              <div class="actionBtns">
+                <v-btn 
+                  color="error"
+                  v-if="admin.superUser"
+                  @click.stop="deleteUser"
+                >
+                  delete
+                </v-btn>
+                <v-btn 
+                  color="accent"
+                  @click.stop="edit"
+                >
+                  edit
+                </v-btn>
+              </div>
+            </v-card-actions>
+          </v-card>
 				</v-flex>
-
       </v-layout>
 		</panel>
 	</v-layout>
@@ -39,14 +58,14 @@ export default {
       teacherInfo: null,
       adminInfo: null,
       states: null,
-      // Tpassport: null,
-      // Spassport: null
-    };
+      level: null,
+    }
   },
 
   computed: {
     ...mapState([
-      "isAdminLoggedIn"
+      "isAdminLoggedIn",
+      "admin"
       ]),
 
     Tpassport() {
@@ -58,12 +77,12 @@ export default {
       return this.studentInfo.passport;
     },
 
-    titleName () {
-      if (this.teacherInfo !== null) return `${this.teacherInfo.ttitle} ${this.teacherInfo.lastname} ${this.teacherInfo.firstname}` 
+    TName () {
+      if (this.teacherInfo !== null) return `Teacher > ${this.teacherInfo.ttitle} ${this.teacherInfo.lastname} ${this.teacherInfo.firstname}` 
       // return `${this.studentInfo.lastname} ${this.studentInfo.firstname}`
     },
     SName () {
-      if (this.studentInfo !== null) return `${this.studentInfo.lastname} ${this.studentInfo.firstname}` 
+      if (this.studentInfo !== null) return `Student > ${this.studentInfo.lastname} ${this.studentInfo.firstname}` 
       // return `${this.studentInfo.lastname} ${this.studentInfo.firstname}`
     },
 
@@ -109,7 +128,7 @@ export default {
         {
           value: false,
           name: "Class",
-          personal: this.studentInfo.classLevel
+          personal: this.level
         },
         {
           value: false,
@@ -214,7 +233,45 @@ export default {
       ];
     }
   },
+  methods: {
+    edit () {
+      const id = this.studentInfo ? this.studentInfo.studId : this.teacherInfo.teacherID
+      this.$router.push(`/admin/edit/${id}`)
+    },
 
+    disagree () {
+      this.dialog = false
+    },
+
+    async deleteUser () {
+      try {
+        const id = this.studentInfo.studId || this.teacherInfo.teacherID
+        swal({
+          title: `Delete user?`,
+          text: 'Deleting this user will remove all ' 
+                + 'information related to the user from database!' + 
+                ' e.g results, registered subject',
+          icon: "warning",
+          closeOnClickOutside: false,
+          buttons: true,
+          dangerMode: true
+        })
+        .then(async mustDelete => {
+          if (mustDelete) {
+            await this.$axios.get(`delete-users/${id}`)
+            .then(res => {
+              if (res.statusText === 'OK') {
+                this.$router.push(`/admin/dashboard`)
+              }
+            })
+          }
+        })
+
+      } catch (error) {
+        console.log(error);
+      }
+    } 
+  },
   async created() {
     const UrlParams = this.$route.params.index;
     let url = await this.$axios.get(`user-info/${UrlParams}`);
@@ -226,22 +283,30 @@ export default {
     users.teachers
       ? (this.teacherInfo = users.teachers)
       : (this.teacherInfo = null);
-    users.admin 
-      ? (this.admin = users.admins) 
-      : (this.admin = null);
+    
 
     // console.log(this.teacherInfo.passport);
 
     if (this.teacherInfo || this.studentInfo) {
+      let classId = null
       let stateID = this.studentInfo ? this.studentInfo.stateOrigin : this.teacherInfo.stateOrigin;
-      const state = await this.$axios.get(`/state/${stateID}`);
+      if (this.studentInfo) classId = this.studentInfo.classLevel
+      const level = await this.$axios.get(`/allclass/${classId}`)
+      this.level = level.data.name
+      const state = await this.$axios.get(`/state/${stateID}`)
       this.states = state.data.name;
+      console.log(this.states);
+      
     }
+
   }
 };
 </script>
 
 <style scoped>
+  .actionBtns{
+    margin: 0 auto;
+  }
 	.profile{
   /* border: 1px solid red; */
   margin: 0 auto !important;

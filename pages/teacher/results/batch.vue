@@ -340,7 +340,7 @@ export default {
     })
 
     const subs = []
-    const mysubs = await this.$axios.get(`/my-subs/${this.$store.state.teacher.teacherID}`)
+    const mysubs = await this.$axios.get(`/teacher-reg-subs/${this.$store.state.teacher.teacherID}`)
     const allClass = await this.$axios.get('/allclass')
     const sub1 = await this.$axios.get('/subject1')
     const sub2 = await this.$axios.get('/subject2')

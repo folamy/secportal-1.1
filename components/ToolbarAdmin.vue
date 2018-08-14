@@ -1,5 +1,5 @@
 <template>
-  <div column wrap>
+  <div column wrap class="">
     <v-navigation-drawer
       :clipped="clipped"
       v-model="drawer"

@@ -113,7 +113,6 @@ export default {
           newPass: this.newPass2,
         }
         const response = await this.$axios.post(`/t-changepassword/${id}`, passwords)
-        console.log(response);
 
         if (response.status === 200) {
           this.success = `Your password has been changed successfully`

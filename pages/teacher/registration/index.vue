@@ -203,7 +203,6 @@
 
 <script>
 import datepicker from '~/components/datepicker'
-import { log } from 'util';
 export default {
   layout: 'teacher',
   components: {

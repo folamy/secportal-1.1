@@ -18,6 +18,7 @@
               class="elevation-2 ml-4"
               hide-actions
               hide-headers
+              :loading="isUpdating"
             >
               <template slot="items" slot-scope="props">
                 <td>{{ props.item.name }}:</td>
@@ -51,10 +52,18 @@ import { log } from 'util';
 export default {
   data () {
     return {
+      isUpdating: false,
       states: '',
       level: '',
       thirdName: '',
       studData: this.$store.state.student
+    }
+  },
+  watch: {
+    isUpdating (val) {
+      if (val) {
+        setTimeout(() => (this.isUpdating = !this.isUpdating), 2000)
+      }
     }
   },
   computed: {
@@ -140,8 +149,8 @@ export default {
   },
 
   middleware: 'studentAuth',
-  async mounted () {
-
+  async created () {
+    this.isUpdating = true
     const stateID = this.$store.state.student.stateOrigin
     const state = await this.$axios.get(`/state/${stateID}`)
     this.states = state.data.name
