@@ -30,17 +30,16 @@ export default {
   data () {
     return {
       accordionHeads: [
-        {title: 'General Information', index: 1},
         {title: 'Subjects', index: 2},
         {title: 'Schedules', index: 3},
         {title: 'Results Upload', index: 4},
       ],
 
-        Information: [
-          {title: 'My Profile', route: 'teacher-profile'},
-          {title: 'Change Password', route: 'teacher-profile-change-password'},
-          {title: 'Change Passport', route: 'teacher-profile-change-passport'}
-        ],
+        // Information: [
+        //   {title: 'My Profile', route: 'teacher-profile'},
+        //   {title: 'Change Password', route: 'teacher-profile-change-password'},
+        //   {title: 'Change Passport', route: 'teacher-profile-change-passport'}
+        // ],
 
         Subjects: [
           {title: 'Add Subjects', route: 'teacher-subjects'},
@@ -48,13 +47,13 @@ export default {
         ],
 
         Schedules: [
-          {title: 'My Time-Table', route: ''},
-          {title: 'Exams Time-table', route: ''}
+          {title: 'Set Time-Table', route: 'admin-timetables'},
+          // {title: 'Set Exams Time-table', route: ''}
         ],
 
         Results: [
-          {title: 'Single Upload', route: 'teacher-results-single'},
-          {title: 'Batch Upload', route: 'teacher-results-batch'}
+          {title: 'Single Upload', route: 'admin-results-single'},
+          {title: 'Batch Upload', route: 'admin-results-batch'}
         ]
 
     }

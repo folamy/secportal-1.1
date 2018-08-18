@@ -87,7 +87,6 @@ module.exports = (router) => {
     tController.studentSubs
   )
   router.get('/all-terms',
-    checkToken.validateT,
     tController.getAllTerms
   )
 

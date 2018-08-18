@@ -171,6 +171,7 @@ module.exports = {
       console.log(err)
     }
   },
+
   deleteUsers(req, res) {
     try {
       if (!req.session.admin && !req.session.admin.superUser) return res.status(401).send('Unauthorized Access')
@@ -188,7 +189,53 @@ module.exports = {
     }
   },
 
-  delSubs(req, res) {
+  deleteSubject(req, res) {
+    try {
+      if (!req.session.admin) return res.status(401).send('Unauthorized Access')
+      models.JSsubjects.findByIdAndRemove(req.params.id).exec()
+      models.SSsubjects.findByIdAndRemove(req.params.id).exec()
+      
+      Promise.props({
+        ss: models.SSsubjects.find({}).execAsync(),
+        js: models.JSsubjects.find({}).execAsync()
+      })
+      .then(subs => {
+        return res.send({
+          success: "Subject deleted",
+          subs: subs
+        });
+      })
+    } catch (err) {
+      console.log(err)
+    }
+  },
+
+  async saveSubject(req, res) {
+    try {
+      let tosave = null
+      if (req.body.school === 'SS') {
+        tosave = new models.SSsubjects(req.body)
+        await tosave.save(function (err, sub) {
+          if (err && err.code === 11000) return res.status(403).send(`whoops! ${req.body.name} already exist!!`)
+          res.send(`${req.body.name} Added Successfully`)
+          console.log(sub)
+          // console.log(err)
+        })
+      } else {
+        tosave = new models.JSsubjects(req.body)
+        await tosave.save(function (err, sub) {
+          if (err && err.code === 11000) return res.status(403).send(`whoops! ${req.body.name} already exist!!`)
+          res.send(`${req.body.name} Added Successfully`)
+          console.log(sub)
+          // console.log(err)
+        })
+      }
+    } catch (err) {
+      console.log(err)
+    }
+  },
+
+  deleteUserSubs(req, res) {
     try {
       const userID = req.body.userID
       const level = req.body.level

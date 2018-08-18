@@ -24,7 +24,7 @@ const createStore = () => {
       admin: null,
       Atoken: null,
       isAdminLoggedIn: false,
-      adminSubs: null,
+      adminSubs: [],
       term: null,
       termEnds: null,
       allterms: null,

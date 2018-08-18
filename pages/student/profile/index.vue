@@ -36,7 +36,7 @@
             >
             <template slot="items" slot-scope="props">
               <td>{{ props.item.name }}:</td>
-              <td class="text-xs-left">{{ props.item.personal }}</td>
+              <td class="text-xs-left"> {{ props.item.personal }}</td>
             </template>
           </v-data-table>
         </v-flex>

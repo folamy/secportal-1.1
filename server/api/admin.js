@@ -3,6 +3,8 @@ const aController = require('../controller/adminController')
 const checkToken = require('../authenticationPolicy/policies')
 const sController = require('../controller/students')
 const tController = require('../controller/teachers')
+const rController = require('../controller/resultupload')
+const testController = require('../controller/testResult')
 
 module.exports = (router) => {
 	router.post('/a-login',
@@ -13,17 +15,29 @@ module.exports = (router) => {
 		checkToken.validateA,
 		aController.allusers
 	)
+	router.post('/delete-subject/:id',
+		checkToken.validateA,
+		aController.deleteSubject
+	)
+	router.post('/save-subject/',
+		checkToken.validateA,
+		aController.saveSubject
+	)
 	router.get('/delete-users/:id',
 		checkToken.validateA,
 		aController.deleteUsers
 	)
 	router.post('/delete-user-subs',
 		checkToken.validateA,
-		aController.delSubs
+		aController.deleteUserSubs
 	)
 	router.post('/add-admin-user',
 		checkToken.validateA,
 		aController.addUser
+	)
+	router.get('/a-student-subs',
+		checkToken.validateA,
+		tController.studentSubs
 	)
 	router.post('/set-term',
 		checkToken.validateA,
@@ -33,6 +47,16 @@ module.exports = (router) => {
 	router.get('/user-info/:id',
 		checkToken.validateA,
 		aController.usersInfo
+	)
+
+	router.get('/a-single-result',
+		checkToken.validateA,
+		rController.singleUpload
+	)
+
+	router.get('/a-single-test-result',
+		checkToken.validateA,
+		testController.singleTest
 	)
 
 	router.post('/save-edit',

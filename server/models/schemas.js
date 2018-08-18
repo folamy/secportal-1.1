@@ -37,7 +37,10 @@ const JSsubjectSchema = new Schema({
   id: ObjectId,
   groupID: Number,
   subID: Number,
-  name: String,
+  name: {
+    type: String,
+    unique: true
+  },
   status: String,
   school: String
 })
@@ -57,7 +60,10 @@ const SSsubjectSchema = new Schema({
   id: ObjectId,
   groupID: Number,
   subID: Number,
-  name: String,
+  name: {
+    type: String,
+    unique: true
+  },
   status: String,
   school: String
 })

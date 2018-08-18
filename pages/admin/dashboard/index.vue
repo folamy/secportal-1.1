@@ -63,7 +63,7 @@
           v-if="select"
           no-data-text="search is empty"
           :headers="headers"
-          :items="select ? searchResult: []"
+          :items="select ? searchResult : []"
           hide-actions
           class="elevation-1 search"
         >
@@ -285,15 +285,13 @@ export default {
       
     }
   },
+
   watch: {
     search(val) {
       val && val !== this.select && this.querySelections(val);
     },
-    // countDown (val) {
-    //   this.countDown =  setInterval(() => this.countDownFormat(), 1000);
-    // },
-    
   },
+
   computed: {
     ...mapState([
       "admin",
@@ -392,8 +390,8 @@ export default {
           buttons: true,
           dangerMode: true,
         })
-        .then(async reset => {
-          if (reset) {
+        .then(async resetPass => {
+          if (resetPass) {
             if (this.select.studId) {
               response = await this.$axios.post(`/reset-student-password/${id}`, password)
             } else if (this.select.teacherID){
@@ -564,17 +562,18 @@ export default {
 <style scoped>
 .selectTerm {
   margin: auto;
-  /* border: 1px solid red; */
 }
+
 .search {
   margin: auto;
-  /* border: 1px solid red */
 }
+
 .deleteButtons {
   color: darkred !important;
   cursor: pointer;
   display: inline;
 }
+
 .studentButtons {
   color: darkolivegreen !important;
   cursor: pointer;

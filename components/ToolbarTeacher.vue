@@ -106,7 +106,7 @@
       height="420"
       app
       floating
-      absolute
+      :absolute="$vuetify.breakpoint.mdAndUp"
       hide-overlay
       v-if="isTeacherLoggedIn"
      >
@@ -230,7 +230,7 @@ export default {
       fixed: false,
       miniVariant: false,
       // right: true,
-      rightDrawer: true,
+      rightDrawer: this.$vuetify.breakpoint.mdAndUp ? true : true,
       title: "SecPortal",
 
       right: true,

@@ -37,7 +37,7 @@ export default {
   data () {
     return {
       isUpdating: false,
-      noDataText: this.isUpdating ? 'You have not registered any subject' : 'loading data',
+      noDataText: 'loading data',
       subjects: [],
       headers: [
           {
@@ -61,8 +61,13 @@ export default {
   watch: {
     isUpdating (val) {
       if (val) {
-        setTimeout(() => (this.isUpdating = !this.isUpdating), 2000)
+        setTimeout(() => {
+          this.isUpdating = !this.isUpdating
+          this.noDataText = 'You have not registered any subject'
+        }, 2000)
       }
+    },
+    noDataText () {
     }
   },
 

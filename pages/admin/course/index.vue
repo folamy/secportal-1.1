@@ -8,7 +8,10 @@
             :items="subs"
             class="elevation-2"
             hide-actions
+            :loading="isUpdating"
+            :no-data-text="noDataText"
           >
+          <v-progress-linear slot="progress" color="secport" indeterminate></v-progress-linear>
           <template slot="items" slot-scope="props">
            <td class="text-xs-left">{{ props.item.name }}</td>
            <td class="text-xs-center">{{  props.item.class }}</td>
@@ -37,8 +40,9 @@ export default {
   middleware: 'adminAuth',
 	data () {
 		return {
+      isUpdating: false,
       subs: null,
-      noDataText: null,
+      noDataText: 'loading data',
       level: null,
       userID: null,
 			headers: [
@@ -76,9 +80,7 @@ export default {
             body.tsub = sub
           }
         }
-        // this.subs = tsub
       }
-        // console.log(body);
       
       await this.$axios.post(`/delete-user-subs`, body)
       .then(res => {
@@ -88,10 +90,26 @@ export default {
     }
   },
 
+  watch: {
+    isUpdating (val) {
+      if (val) {
+        setTimeout(() => {
+          this.isUpdating = !this.isUpdating
+          this.noDataText = 'No registered subject for this user'
+          
+          this.subs = this.$store.state.adminSubs
+        }, 2000)
+      }
+    },
+    noDataText () {
+    }
+  },
+
   created() {
     this.userID = this.$route.params.userID
     this.level = this.$route.params.studClass
-    this.subs = this.$store.state.adminSubs
+    this.subs = []
+    this.isUpdating = true
   },
 
 	async fetch ({store, params, redirect, app: { $axios }}) {
@@ -102,17 +120,20 @@ export default {
     level 
       ? getRegSubs = await $axios.get(`/get-student-subs/${userID}/${level}`)
       : getRegSubs = await $axios.get(`/get-teacher-subs/${userID}`)
-    
-    // const getRegSubs = await $axios.get(`/get-student-subs/${userID}/${level}`)
+
     const subCl = await $axios.get(`/allclass/${level}`)
     const slevel = subCl.data.name
     let subs  = level ? getRegSubs.data.subjects : getRegSubs.data
-    subs.forEach(item => {
-      item.class = level ? slevel : item.class
-    })
+    if (subs) {
+      subs.forEach(item => {
+        item.class = level ? slevel : item.class
+      })
+      store.commit('setAdminSubs', subs)
+    } else {
+      store.commit('setAdminSubs', [])
+    }
     // console.log(subs);
     
-    store.commit('setAdminSubs', subs)
 	}
 }
 </script>

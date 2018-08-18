@@ -22,14 +22,14 @@
 					single-line
 				></v-text-field>
 				<v-radio-group v-model="user.superUser"
-            label="Your gender"
-            row
-            :rules="[v => !!v || 'Select your gender']"
-            required
-            >
-            <v-radio class="mt-1 ml-4" label="Normal User" value="Normal" ></v-radio>
-            <v-radio class="mt-1" label="Super User" value="Super"></v-radio>
-          </v-radio-group>
+					label="Set user type"
+					row
+					:rules="[v => !!v || 'Select your gender']"
+					required
+					>
+					<v-radio class="mt-1 ml-4" label="Normal User" value="Normal" ></v-radio>
+					<v-radio class="mt-1" label="Super User" value="Super"></v-radio>
+				</v-radio-group>
 
 				<div class="danger-alert" v-html="error"></div>
 
